@@ -1,0 +1,265 @@
+{% extends 'stay/base.html' %}
+{% block title %}Admin Dashboard - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">
+        <i class="fas fa-chart-line"></i> Admin Dashboard
+    </h2>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <i class="fas fa-bed fa-3x text-primary"></i>
+                    <h3 class="mt-2">{{ total_rooms }}</h3>
+                    <p class="text-muted mb-0">Total Rooms</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <i class="fas fa-calendar-check fa-3x text-success"></i>
+                    <h3 class="mt-2">{{ total_bookings }}</h3>
+                    <p class="text-muted mb-0">Total Bookings</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <i class="fas fa-user fa-3x text-info"></i>
+                    <h3 class="mt-2">{{ total_customers }}</h3>
+                    <p class="text-muted mb-0">Customers</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <i class="fas fa-hotel fa-3x text-warning"></i>
+                    <h3 class="mt-2">{{ total_hotel_owners }}</h3>
+                    <p class="text-muted mb-0">Hotel Owners</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <i class="fas fa-dollar-sign fa-3x text-danger"></i>
+                    <h3 class="mt-2">${{ total_revenue }}</h3>
+                    <p class="text-muted mb-0">Total Revenue</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <i class="fas fa-clock fa-3x text-warning"></i>
+                    <h3 class="mt-2">{{ pending_hotels|default:"0" }}</h3>
+                    <p class="text-muted mb-0">Pending Hotels</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <i class="fas fa-credit-card fa-3x text-info"></i>
+                    <h3 class="mt-2">{{ pending_payments|default:"0" }}</h3>
+                    <p class="text-muted mb-0">Pending Payments</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> Admin Actions</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Verification Actions -->
+                    <div class="btn-group mb-2 me-2">
+                        <a href="{% url 'admin_verify_hotels' %}" class="btn btn-warning">
+                            <i class="fas fa-building"></i> Verify Hotels 
+                            {% if pending_hotels > 0 %}
+                                <span class="badge bg-danger">{{ pending_hotels }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'admin_verify_payments' %}" class="btn btn-info">
+                            <i class="fas fa-credit-card"></i> Verify Payments
+                            {% if pending_payments > 0 %}
+                                <span class="badge bg-danger">{{ pending_payments }}</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                    
+                    <!-- Room Management -->
+                    <div class="btn-group mb-2">
+                        <a href="{% url 'manage_rooms' %}" class="btn btn-primary">
+                            <i class="fas fa-bed"></i> Manage All Rooms
+                        </a>
+                        <a href="{% url 'add_room' %}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add New Room
+                        </a>
+                        <a href="{% url 'admin:index' %}" class="btn btn-secondary">
+                            <i class="fas fa-database"></i> Django Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pending Hotels Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="fas fa-building"></i> Pending Hotel Verifications 
+                {% if pending_hotels > 0 %}
+                    <span class="badge bg-danger">{{ pending_hotels }}</span>
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Hotel Name</th>
+                            <th>Owner</th>
+                            <th>Location</th>
+                            <th>TIN Number</th>
+                            <th>Submitted</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hotel in pending_hotels_list %}
+                        <tr>
+                            <td>#{{ hotel.id }}</a></td>
+                            <td><strong>{{ hotel.name }}</strong></a></td>
+                            <td>{{ hotel.user.get_full_name|default:hotel.user.username }}</a></td>
+                            <td>{{ hotel.city }}, {{ hotel.country }}</a></td>
+                            <td>{{ hotel.tin_number|default:"Not provided" }}</a></td>
+                            <td>{{ hotel.created_at|date:"M d, Y" }}</a></td>
+                            <td>
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            </a>
+                            <td>
+                                <a href="{% url 'admin_verify_hotel_detail' hotel.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> Review Documents
+                                </a>
+                            </a>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="fas fa-check-circle fa-2x text-success"></i>
+                                <p class="mt-2 mb-0">No pending hotels to verify</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Bookings -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Bookings</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Room</th>
+                            <th>Hotel</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            <th>Total</th>
+                            <th>Payment Status</th>
+                            <th>Booking Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in recent_bookings %}
+                        <tr>
+                            <td>#{{ booking.id }}</a></td>
+                            <td>{{ booking.user.username }}</a></td>
+                            <td>{{ booking.room.room_number }} - {{ booking.room.get_room_type_display }}</a></small></td>
+                            <td>{{ booking.room.hotel.name|default:"N/A" }}</a></td>
+                            <td>{{ booking.check_in }}</a></td>
+                            <td>{{ booking.check_out }}</a></td>
+                            <td>${{ booking.total_price }}</a></td>
+                            <td>
+                                {% if booking.payment_status == 'paid' %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% elif booking.payment_status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ booking.get_payment_status_display }}</span>
+                                {% endif %}
+                            </a>
+                            <td>
+                                {% if booking.booking_status == 'payment_uploaded' %}
+                                    <span class="badge bg-info">Payment Uploaded</span>
+                                {% elif booking.booking_status == 'payment_verified' %}
+                                    <span class="badge bg-success">Payment Verified</span>
+                                {% elif booking.booking_status == 'confirmed' %}
+                                    <span class="badge bg-primary">Confirmed</span>
+                                {% elif booking.booking_status == 'pending_payment' %}
+                                    <span class="badge bg-warning text-dark">Pending Payment</span>
+                                {% elif booking.booking_status == 'cancelled' %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ booking.get_booking_status_display }}</span>
+                                {% endif %}
+                            </a>
+                            <td>
+                                {% if booking.booking_status == 'payment_uploaded' %}
+                                    <a href="{% url 'admin_verify_payment_detail' booking.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-check"></i> Verify Payment
+                                    </a>
+                                {% elif booking.booking_status == 'pending_payment' %}
+                                    <span class="text-muted">Awaiting payment</span>
+                                {% elif booking.booking_status == 'pending' %}
+                                    <a href="{% url 'approve_booking' booking.id %}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-check"></i> Approve
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'admin_verify_payment_detail' booking.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                {% endif %}
+                            </a>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center py-4">
+                                <i class="fas fa-inbox fa-2x text-muted"></i>
+                                <p class="mt-2 mb-0">No bookings found.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,259 @@
+{% extends 'stay/base.html' %}
+{% block title %}Room Details - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Room Main Image and Details -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg mb-4">
+                <img src="{{ room.get_image }}" 
+                     class="card-img-top" 
+                     alt="{{ room.get_room_type_display }}"
+                     style="height: 400px; object-fit: cover;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="card-title">{{ room.get_room_type_display }}</h2>
+                            <p class="text-muted">
+                                <i class="fas fa-bed"></i> Room {{ room.room_number }} |
+                                <i class="fas fa-arrows-alt"></i> Room Size: {{ room.capacity }} sqm |
+                                <i class="fas fa-tag"></i> {{ room.get_room_type_display }}
+                            </p>
+                            {% if room.hotel %}
+                                <p class="text-muted">
+                                    <i class="fas fa-hotel"></i> {{ room.hotel.name }} |
+                                    <i class="fas fa-map-marker-alt"></i> {{ room.hotel.city }}, {{ room.hotel.country }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        <div class="text-end">
+                            <h3 class="text-primary">${{ room.price_per_night }}</h3>
+                            <p class="text-muted">per night</p>
+                            <span class="badge bg-{% if room.status == 'available' %}success{% else %}danger{% endif %} fs-6">
+                                <i class="fas fa-circle"></i> {{ room.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5><i class="fas fa-info-circle"></i> Room Features</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check-circle text-success"></i> {{ room.capacity }} Guests Capacity</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success"></i> Free High-Speed WiFi</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success"></i> Air Conditioning</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success"></i> Flat Screen TV</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check-circle text-success"></i> Mini Bar</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success"></i> Room Service</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success"></i> Private Bathroom</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success"></i> City View</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <h5><i class="fas fa-clipboard-list"></i> Description</h5>
+                    <p>{{ room.description|default:"Experience luxury and comfort in our beautifully designed room. Perfect for both business and leisure travelers." }}</p>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i> {{ room.amenities }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Booking Sidebar with Calendar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg sticky-top" style="top: 100px;">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-calendar-check"></i> Book This Room</h5>
+                </div>
+                <div class="card-body">
+                    <!-- ========== CALENDAR SECTION - PUT HERE ========== -->
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-calendar-alt"></i> Select Dates</label>
+                        <div class="calendar-container">
+                            <input type="text" id="dateRange" class="form-control" placeholder="Select check-in and check-out dates">
+                        </div>
+                        <div class="mt-2">
+                            <div class="d-flex justify-content-between">
+                                <div><span class="badge bg-danger">🔴</span> Booked</div>
+                                <div><span class="badge bg-success">🟢</span> Available</div>
+                                <div><span class="badge bg-primary">🔵</span> Selected</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ========== END CALENDAR SECTION ========== -->
+                    
+                    <form method="post" action="{% url 'booking' room.id %}" id="bookingForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Check-in Date</label>
+                            <input type="date" name="check_in" class="form-control" id="check_in" readonly required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Check-out Date</label>
+                            <input type="date" name="check_out" class="form-control" id="check_out" readonly required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Number of Guests</label>
+                            <select name="guests" class="form-select" required>
+                                {% for i in "123456"|make_list %}
+                                    <option value="{{ forloop.counter }}">{{ forloop.counter }} Guest{{ forloop.counter|pluralize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Payment Method</label>
+                            <select name="payment_method" class="form-select" required>
+                                <option value="gcash">GCash</option>
+                                <option value="paymaya">PayMaya</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="credit_card">Credit Card</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Special Requests</label>
+                            <textarea name="special_requests" class="form-control" rows="2" 
+                                      placeholder="Any special requests?"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Total Price</label>
+                            <h3 id="total_price" class="text-primary">$0.00</h3>
+                            <input type="hidden" id="total_amount" name="total_price">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-2" id="bookBtn" disabled>
+                            <i class="fas fa-credit-card"></i> Select Dates First
+                        </button>
+                        
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt"></i> Secure Booking<br>
+                                <i class="fas fa-clock"></i> Free cancellation up to 24 hours
+                            </small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Similar Rooms Section -->
+    {% if similar_rooms %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="mb-4">Similar Rooms You Might Like</h4>
+        </div>
+        {% for similar in similar_rooms %}
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm">
+                <img src="{{ similar.get_image }}" 
+                     class="card-img-top" 
+                     alt="Room" 
+                     style="height: 150px; object-fit: cover;">
+                <div class="card-body">
+                    <h6 class="card-title">{{ similar.get_room_type_display }}</h6>
+                    <p class="card-text small">${{ similar.price_per_night }}/night</p>
+                    <a href="{% url 'room_details' similar.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Include Flatpickr CSS and JS for better date picker -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+// Unavailable dates from backend
+const unavailableDatesSet = new Set({{ unavailable_dates|safe }});
+
+// Initialize flatpickr date range picker
+flatpickr("#dateRange", {
+    mode: "range",
+    dateFormat: "Y-m-d",
+    minDate: "today",
+    disable: Array.from(unavailableDatesSet),
+    onReady: function(selectedDates, dateStr, instance) {
+        // Style disabled dates as red
+        instance.calendarContainer.querySelectorAll('.flatpickr-day.disabled').forEach(day => {
+            day.style.backgroundColor = '#ffebee';
+            day.style.color = '#c62828';
+            day.style.textDecoration = 'line-through';
+        });
+    },
+    onChange: function(selectedDates, dateStr, instance) {
+        if (selectedDates.length === 2) {
+            const checkIn = selectedDates[0];
+            const checkOut = selectedDates[1];
+            
+            // Format dates for input fields
+            const checkInStr = checkIn.toISOString().split('T')[0];
+            const checkOutStr = checkOut.toISOString().split('T')[0];
+            
+            document.getElementById('check_in').value = checkInStr;
+            document.getElementById('check_out').value = checkOutStr;
+            
+            // Calculate total price
+            const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+            const pricePerNight = {{ room.price_per_night }};
+            const total = nights * pricePerNight;
+            
+            document.getElementById('total_price').textContent = '$' + total.toFixed(2);
+            document.getElementById('total_amount').value = total.toFixed(2);
+            
+            // Enable book button
+            document.getElementById('bookBtn').disabled = false;
+            document.getElementById('bookBtn').innerHTML = '<i class="fas fa-credit-card"></i> Book Now - $' + total.toFixed(2);
+        } else {
+            document.getElementById('bookBtn').disabled = true;
+            document.getElementById('bookBtn').innerHTML = '<i class="fas fa-credit-card"></i> Select Dates First';
+        }
+    }
+});
+
+// Custom styling for disabled dates
+const style = document.createElement('style');
+style.textContent = `
+    .flatpickr-day.disabled {
+        background-color: #ffebee !important;
+        color: #c62828 !important;
+        text-decoration: line-through !important;
+        border-color: #ffcdd2 !important;
+    }
+    .flatpickr-day.disabled:hover {
+        background-color: #ffcdd2 !important;
+        cursor: not-allowed !important;
+    }
+    .flatpickr-day.inRange {
+        background-color: #e3f2fd !important;
+        border-color: #bbdefb !important;
+    }
+    .flatpickr-day.selected {
+        background-color: #4caf50 !important;
+        border-color: #4caf50 !important;
+        color: white !important;
+    }
+    .flatpickr-day.today {
+        border-color: #ff6b35 !important;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

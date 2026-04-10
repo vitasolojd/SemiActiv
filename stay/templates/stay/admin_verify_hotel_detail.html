@@ -1,0 +1,182 @@
+{% extends 'stay/base.html' %}
+{% block title %}Verify Hotel - {{ hotel.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_verify_hotels' %}">Verify Hotels</a></li>
+                    <li class="breadcrumb-item active">{{ hotel.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ hotel.name }}</h4>
+                    <small>{{ hotel.city }}, {{ hotel.country }}</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-user"></i> Owner Information</h6>
+                            <p><strong>Name:</strong> {{ hotel.user.get_full_name|default:hotel.user.username }}<br>
+                            <strong>Email:</strong> {{ hotel.user.email }}<br>
+                            <strong>Phone:</strong> {{ hotel.user.profile.phone|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-hotel"></i> Hotel Contact</h6>
+                            <p><strong>Phone:</strong> {{ hotel.phone }}<br>
+                            <strong>Email:</strong> {{ hotel.email }}<br>
+                            <strong>Website:</strong> <a href="{{ hotel.website }}" target="_blank">{{ hotel.website|default:"Not provided" }}</a></p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6><i class="fas fa-map-marker-alt"></i> Address</h6>
+                    <p>{{ hotel.full_address }}</p>
+                    
+                    <h6><i class="fas fa-info-circle"></i> Description</h6>
+                    <p>{{ hotel.description|default:"No description provided" }}</p>
+                    
+                    <h6><i class="fas fa-concierge-bell"></i> Amenities</h6>
+                    <p>{{ hotel.amenities|default:"No amenities listed" }}</p>
+                    
+                    <hr>
+                    
+                    <h5 class="text-warning"><i class="fas fa-file-alt"></i> Verification Documents</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <strong>TIN Number:</strong> {{ hotel.tin_number|default:"Not provided" }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <strong>Business Permit Number:</strong> {{ hotel.business_permit_number|default:"Not provided" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        {% if hotel.business_permit %}
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">Business Permit</div>
+                                <div class="card-body text-center">
+                                    <a href="{{ hotel.business_permit.url }}" target="_blank" class="btn btn-sm btn-info">
+                                        <i class="fas fa-file-pdf"></i> View Document
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if hotel.dti_registration %}
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">DTI/SEC Registration</div>
+                                <div class="card-body text-center">
+                                    <a href="{{ hotel.dti_registration.url }}" target="_blank" class="btn btn-sm btn-info">
+                                        <i class="fas fa-file-pdf"></i> View Document
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if hotel.mayors_permit %}
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">Mayor's Permit</div>
+                                <div class="card-body text-center">
+                                    <a href="{{ hotel.mayors_permit.url }}" target="_blank" class="btn btn-sm btn-info">
+                                        <i class="fas fa-file-pdf"></i> View Document
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5><i class="fas fa-university"></i> Bank Account for Payouts</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Account Name:</strong> {{ hotel.bank_account_name|default:"Not provided" }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Bank Name:</strong> {{ hotel.bank_name|default:"Not provided" }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Account Number:</strong> {{ hotel.bank_account_number|default:"Not provided" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-{% if hotel.verification_status == 'pending' %}warning{% elif hotel.verification_status == 'approved' %}success{% else %}danger{% endif %} text-white">
+                    <h5 class="mb-0">Verification Action</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Current Status:</strong> 
+                        <span class="badge bg-{% if hotel.verification_status == 'pending' %}warning{% elif hotel.verification_status == 'approved' %}success{% else %}danger{% endif %}">
+                            {{ hotel.get_verification_status_display }}
+                        </span>
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Admin Notes</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Add verification notes..."></textarea>
+                        </div>
+                        
+                        {% if hotel.verification_status == 'pending' %}
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="action" value="approve" class="btn btn-success">
+                                    <i class="fas fa-check-circle"></i> Approve Hotel
+                                </button>
+                                <button type="submit" name="action" value="reject" class="btn btn-danger">
+                                    <i class="fas fa-times-circle"></i> Reject Hotel
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> This hotel has been {{ hotel.verification_status }}.
+                            </div>
+                            <a href="{% url 'admin_verify_hotels' %}" class="btn btn-secondary w-100">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            
+            {% if hotel.image %}
+            <div class="card mt-3">
+                <div class="card-header">Hotel Image</div>
+                <div class="card-body text-center">
+                    <img src="{{ hotel.image.url }}" class="img-fluid rounded" alt="{{ hotel.name }}">
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

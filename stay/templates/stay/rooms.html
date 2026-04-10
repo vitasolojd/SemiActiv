@@ -1,0 +1,150 @@
+{% extends 'stay/base.html' %}
+{% block title %}Rooms - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-4">Find Your Perfect Stay</h2>
+    
+    <!-- Search Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <form method="get" action="{% url 'rooms' %}">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label"><i class="fas fa-location-dot"></i> Location</label>
+                                <input type="text" name="location" class="form-control" 
+                                       placeholder="City or Country" value="{{ search_params.location }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label"><i class="fas fa-calendar"></i> Check In</label>
+                                <input type="date" name="check_in" class="form-control" 
+                                       value="{{ search_params.check_in }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label"><i class="fas fa-calendar"></i> Check Out</label>
+                                <input type="date" name="check_out" class="form-control" 
+                                       value="{{ search_params.check_out }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label"><i class="fas fa-users"></i> Guests</label>
+                                <input type="number" name="guests" class="form-control" 
+                                       placeholder="Guests" value="{{ search_params.guests }}" min="1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label"><i class="fas fa-door-open"></i> Room Type</label>
+                                <select name="room_type" class="form-select">
+                                    <option value="">All Types</option>
+                                    <option value="SINGLE" {% if search_params.room_type == 'SINGLE' %}selected{% endif %}>Single Room</option>
+                                    <option value="DOUBLE" {% if search_params.room_type == 'DOUBLE' %}selected{% endif %}>Double Room</option>
+                                    <option value="TWIN" {% if search_params.room_type == 'TWIN' %}selected{% endif %}>Twin Room</option>
+                                    <option value="QUEEN" {% if search_params.room_type == 'QUEEN' %}selected{% endif %}>Queen Room</option>
+                                    <option value="KING" {% if search_params.room_type == 'KING' %}selected{% endif %}>King Room</option>
+                                    <option value="MASTER" {% if search_params.room_type == 'MASTER' %}selected{% endif %}>Master Suite</option>
+                                    <option value="FAMILY" {% if search_params.room_type == 'FAMILY' %}selected{% endif %}>Family Room</option>
+                                    <option value="DELUXE" {% if search_params.room_type == 'DELUXE' %}selected{% endif %}>Deluxe Suite</option>
+                                    <option value="PRESIDENTIAL" {% if search_params.room_type == 'PRESIDENTIAL' %}selected{% endif %}>Presidential Suite</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="fas fa-dollar-sign"></i> Min Price</label>
+                                <input type="number" name="min_price" class="form-control" 
+                                       placeholder="Min $" value="{{ search_params.min_price }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="fas fa-dollar-sign"></i> Max Price</label>
+                                <input type="number" name="max_price" class="form-control" 
+                                       placeholder="Max $" value="{{ search_params.max_price }}">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i> Search Rooms
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popular Locations -->
+    {% if locations %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h5>Popular Locations:</h5>
+            {% for loc in locations %}
+            <a href="?location={{ loc }}" class="btn btn-outline-secondary btn-sm me-2 mb-2">
+                <i class="fas fa-map-marker-alt"></i> {{ loc }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Results Count -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <p class="text-muted">Found {{ rooms|length }} room{{ rooms|pluralize }} available</p>
+        </div>
+    </div>
+    
+    <!-- Room Cards -->
+    <div class="row">
+        {% for room in rooms %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm hover-shadow transition">
+                <div class="position-relative">
+                    <img src="{{ room.get_image }}" class="card-img-top" 
+                         alt="{{ room.get_room_type_display }}"
+                         style="height: 220px; object-fit: cover;">
+                    <span class="position-absolute top-0 end-0 badge bg-{% if room.status == 'available' %}success{% else %}danger{% endif %} m-2">
+                        {{ room.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ room.get_room_type_display }}</h5>
+                        <h6 class="text-primary mb-0">${{ room.price_per_night }}<small>/night</small></h6>
+                    </div>
+                    {% if room.hotel %}
+                    <p class="text-muted small mb-2">
+                        <i class="fas fa-hotel"></i> {{ room.hotel.name }}<br>
+                        <i class="fas fa-map-marker-alt"></i> {{ room.hotel.city }}, {{ room.hotel.country }}
+                    </p>
+                    {% endif %}
+                    <p class="card-text small">{{ room.amenities|truncatechars:80 }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span class="badge bg-light text-dark me-1"><i class="fas fa-users"></i> {{ room.capacity }}</span>
+                            <span class="badge bg-light text-dark"><i class="fas fa-bed"></i> {{ room.room_number }}</span>
+                        </div>
+                        <a href="{% url 'room_details' room.id %}" class="btn btn-sm btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-bed fa-4x text-muted mb-3"></i>
+            <h4>No Rooms Found</h4>
+            <p class="text-muted">Try different search criteria or check back later.</p>
+            <a href="{% url 'rooms' %}" class="btn btn-primary">Clear Filters</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+</style>
+{% endblock %}

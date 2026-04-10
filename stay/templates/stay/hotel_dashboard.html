@@ -1,0 +1,256 @@
+{% extends 'stay/base.html' %}
+{% block title %}Hotel Dashboard - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    {% if not hotel %}
+        <!-- No Hotel Registered -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-lg text-center">
+                    <div class="card-body p-5">
+                        <i class="fas fa-hotel fa-5x text-warning mb-4"></i>
+                        <h3 class="mb-3">Welcome, {{ user.first_name|default:user.username }}!</h3>
+                        <p class="lead text-muted mb-4">You haven't registered your hotel yet.</p>
+                        <a href="{% url 'register_hotel' %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-plus-circle"></i> Register Your Hotel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Hotel Status Banner -->
+        {% if hotel.verification_status == 'pending' %}
+            <div class="alert alert-warning text-center mb-4">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h4>⏳ Your Hotel is Pending Verification</h4>
+                <p>Your hotel is currently under review by our admin team. Rooms will NOT be visible to customers until approved.</p>
+                <p><strong>Status:</strong> <span class="badge bg-warning">Pending Verification</span></p>
+                <p class="mb-0 small">This process usually takes 24-48 hours. You will be notified once approved.</p>
+            </div>
+        {% elif hotel.verification_status == 'rejected' %}
+            <div class="alert alert-danger text-center mb-4">
+                <i class="fas fa-times-circle fa-2x mb-2"></i>
+                <h4>❌ Your Hotel Verification Failed</h4>
+                <p>Your hotel registration has been rejected. Please check your documents and resubmit.</p>
+                <p><strong>Reason:</strong> {{ hotel.verification_notes|default:"Please contact admin for details" }}</p>
+                <a href="{% url 'register_hotel' %}" class="btn btn-danger mt-2">Resubmit Documents</a>
+            </div>
+        {% elif hotel.verification_status == 'approved' %}
+            <div class="alert alert-success text-center mb-4">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h4>✅ Your Hotel is Verified and Active!</h4>
+                <p>Your hotel is now visible to customers. You can add rooms and manage bookings.</p>
+                <p><strong>Status:</strong> <span class="badge bg-success">Approved</span></p>
+            </div>
+        {% endif %}
+        
+        <!-- Hotel Info Card -->
+        <div class="card bg-{% if hotel.verification_status == 'approved' %}success{% elif hotel.verification_status == 'pending' %}warning{% else %}danger{% endif %} text-white mb-4">
+            <div class="card-body">
+                <h2><i class="fas fa-hotel"></i> {{ hotel.name }}</h2>
+                <p>{{ hotel.address }}, {{ hotel.city }}, {{ hotel.country }}</p>
+                <p><i class="fas fa-phone"></i> {{ hotel.phone }} | <i class="fas fa-envelope"></i> {{ hotel.email }}</p>
+            </div>
+        </div>
+        
+        <!-- Only show management options if approved -->
+        {% if hotel.verification_status == 'approved' %}
+            <!-- Statistics -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center shadow-sm border-0">
+                        <div class="card-body">
+                            <i class="fas fa-bed fa-3x text-primary"></i>
+                            <h3 class="mt-2">{{ total_rooms }}</h3>
+                            <p class="text-muted mb-0">Total Rooms</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center shadow-sm border-0">
+                        <div class="card-body">
+                            <i class="fas fa-check-circle fa-3x text-success"></i>
+                            <h3 class="mt-2">{{ available_rooms }}</h3>
+                            <p class="text-muted mb-0">Available Rooms</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center shadow-sm border-0">
+                        <div class="card-body">
+                            <i class="fas fa-book fa-3x text-warning"></i>
+                            <h3 class="mt-2">{{ booked_rooms }}</h3>
+                            <p class="text-muted mb-0">Booked Rooms</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center shadow-sm border-0">
+                        <div class="card-body">
+                            <i class="fas fa-calendar-check fa-3x text-info"></i>
+                            <h3 class="mt-2">{{ total_bookings }}</h3>
+                            <p class="text-muted mb-0">Total Bookings</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hotel Management Actions -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-cog"></i> Hotel Management</h5>
+                        </div>
+                        <div class="card-body">
+                            <a href="{% url 'add_hotel_room' %}" class="btn btn-primary me-2">
+                                <i class="fas fa-plus-circle"></i> Add New Room
+                            </a>
+                            <a href="{% url 'hotel_manage_rooms' %}" class="btn btn-info me-2">
+                                <i class="fas fa-edit"></i> Manage My Rooms
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rooms List -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-bed"></i> Your Rooms</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Room No.</th>
+                                    <th>Type</th>
+                                    <th>Capacity</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for room in rooms %}
+                                <tr>
+                                    <td>
+                                        <img src="{{ room.get_image }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                    </td>
+                                    <td><strong>{{ room.room_number }}</strong></td>
+                                    <td>{{ room.get_room_type_display }}</td>
+                                    <td>{{ room.capacity }}</td>
+                                    <td>${{ room.price_per_night }}</td>
+                                    <td>
+                                        {% if room.status == 'available' %}
+                                            <span class="badge bg-success">Available</span>
+                                        {% elif room.status == 'booked' %}
+                                            <span class="badge bg-danger">Booked</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Maintenance</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'hotel_edit_room' room.id %}" class="btn btn-warning btn-sm">Edit</a>
+                                        <a href="{% url 'hotel_delete_room' room.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')">Delete</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="fas fa-bed fa-2x text-muted"></i>
+                                        <p class="mt-2 mb-0">No rooms added yet.</p>
+                                        <a href="{% url 'add_hotel_room' %}" class="btn btn-primary btn-sm mt-2">Add Your First Room</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Bookings -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Bookings</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Guest</th>
+                                    <th>Room</th>
+                                    <th>Check In</th>
+                                    <th>Check Out</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in recent_bookings %}
+                                <tr>
+                                    <td>#{{ booking.id }}</td>
+                                    <td>{{ booking.user.get_full_name|default:booking.user.username }}</td>
+                                    <td>{{ booking.room.room_number }}</td>
+                                    <td>{{ booking.check_in }}</td>
+                                    <td>{{ booking.check_out }}</td>
+                                    <td>${{ booking.total_price }}</td>
+                                    <td>
+                                        {% if booking.booking_status == 'confirmed' %}
+                                            <span class="badge bg-success">Confirmed</span>
+                                        {% elif booking.booking_status == 'pending_payment' %}
+                                            <span class="badge bg-warning text-dark">Pending Payment</span>
+                                        {% elif booking.booking_status == 'payment_uploaded' %}
+                                            <span class="badge bg-info">Payment Uploaded</span>
+                                        {% elif booking.booking_status == 'payment_verified' %}
+                                            <span class="badge bg-primary">Payment Verified</span>
+                                        {% elif booking.booking_status == 'cancelled' %}
+                                            <span class="badge bg-danger">Cancelled</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ booking.get_booking_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="fas fa-inbox fa-2x text-muted"></i>
+                                        <p class="mt-2 mb-0">No bookings yet.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% elif hotel.verification_status == 'pending' %}
+            <div class="text-center py-5">
+                <i class="fas fa-clock fa-4x text-warning mb-3"></i>
+                <h4>Waiting for Admin Approval</h4>
+                <p>Your hotel is currently pending verification. Once approved, you'll be able to:</p>
+                <ul class="list-inline">
+                    <li class="list-inline-item">✓ Add Rooms</li>
+                    <li class="list-inline-item">✓ Manage Bookings</li>
+                    <li class="list-inline-item">✓ Track Revenue</li>
+                </ul>
+                <p class="text-muted mt-3">You will receive an email notification once your hotel is verified.</p>
+            </div>
+        {% elif hotel.verification_status == 'rejected' %}
+            <div class="text-center py-5">
+                <i class="fas fa-times-circle fa-4x text-danger mb-3"></i>
+                <h4>Verification Failed</h4>
+                <p>Your hotel registration was not approved. Please contact support or resubmit with correct documents.</p>
+                <a href="{% url 'register_hotel' %}" class="btn btn-danger mt-3">Resubmit Hotel Registration</a>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

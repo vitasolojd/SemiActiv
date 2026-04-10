@@ -1,0 +1,38 @@
+{% extends 'stay/base.html' %}
+{% block title %}Delete Room - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-bed fa-4x text-danger mb-3"></i>
+                    <h5>Are you sure you want to delete this room?</h5>
+                    <p><strong>Room {{ room.room_number }} - {{ room.get_room_type_display }}</strong></p>
+                    <p class="text-danger">This action cannot be undone!</p>
+                    
+                    {% if room.bookings.exists %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-circle"></i> This room has {{ room.bookings.count }} booking(s). Deleting will affect these bookings.
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Yes, Delete Room
+                        </button>
+                        <a href="{% url 'manage_rooms' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

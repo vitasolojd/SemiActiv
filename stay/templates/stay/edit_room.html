@@ -1,0 +1,64 @@
+{% extends 'stay/base.html' %}
+{% block title %}Edit Room - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0"><i class="fas fa-edit"></i> Edit Room: {{ room.room_number }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small">{{ field.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Update Room
+                            </button>
+                            <a href="{% url 'manage_rooms' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateRoomDetails(select) {
+    const roomDefaults = {
+        'SINGLE': { capacity: 1, price: 80 },
+        'DOUBLE': { capacity: 2, price: 120 },
+        'TWIN': { capacity: 2, price: 130 },
+        'QUEEN': { capacity: 2, price: 160 },
+        'KING': { capacity: 2, price: 200 },
+        'MASTER': { capacity: 4, price: 350 },
+        'FAMILY': { capacity: 6, price: 280 },
+        'DELUXE': { capacity: 2, price: 300 },
+        'PRESIDENTIAL': { capacity: 4, price: 800 }
+    };
+    
+    const selected = select.value;
+    if (roomDefaults[selected]) {
+        if (!document.getElementById('id_capacity').value) {
+            document.getElementById('id_capacity').value = roomDefaults[selected].capacity;
+        }
+        if (!document.getElementById('id_price_per_night').value) {
+            document.getElementById('id_price_per_night').value = roomDefaults[selected].price;
+        }
+    }
+}
+</script>
+{% endblock %}

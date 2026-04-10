@@ -1,0 +1,92 @@
+{% extends 'stay/base.html' %}
+{% block title %}Upload Payment - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <i class="fas fa-credit-card fa-2x mb-2"></i>
+                    <h3 class="mb-0">Complete Your Payment</h3>
+                    <p class="mb-0 small">Booking #{{ booking.id }}</p>
+                </div>
+                <div class="card-body p-4">
+                    
+                    <!-- Booking Summary -->
+                    <div class="alert alert-info">
+                        <h5 class="mb-2">Booking Summary</h5>
+                        <p class="mb-1"><strong>Room:</strong> {{ booking.room.get_room_type_display }} (Room {{ booking.room.room_number }})</p>
+                        <p class="mb-1"><strong>Dates:</strong> {{ booking.check_in }} to {{ booking.check_out }}</p>
+                        <p class="mb-1"><strong>Guests:</strong> {{ booking.guests }}</p>
+                        <p class="mb-0"><strong>Total Amount:</strong> <span class="h5 text-primary">${{ booking.total_price }}</span></p>
+                    </div>
+                    
+                    <!-- Payment Instructions -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <i class="fas fa-info-circle"></i> Payment Instructions
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Payment Method: {{ payment_info.name }}</h6>
+                                    <hr>
+                                    {% if payment_info.number %}
+                                        <p><strong>Send to:</strong> {{ payment_info.number }}</p>
+                                        <p><strong>Account Name:</strong> {{ payment_info.name_on_account }}</p>
+                                    {% endif %}
+                                    {% if payment_info.bank %}
+                                        <p><strong>Bank:</strong> {{ payment_info.bank }}</p>
+                                        <p><strong>Account Name:</strong> {{ payment_info.account_name }}</p>
+                                        <p><strong>Account Number:</strong> {{ payment_info.account_number }}</p>
+                                        <p><strong>Branch:</strong> {{ payment_info.branch }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="alert alert-warning">
+                                        <strong>Reference Number:</strong> BOOKING-{{ booking.id }}
+                                    </div>
+                                    <div class="alert alert-secondary">
+                                        <strong>Amount to Pay:</strong> ${{ booking.total_price }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upload Form -->
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-hashtag"></i> Reference Number *</label>
+                            {{ form.payment_reference }}
+                            <small class="text-muted">Enter the reference number from your transaction</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-image"></i> Payment Screenshot *</label>
+                            {{ form.payment_screenshot }}
+                            <small class="text-muted">Upload a screenshot of your payment confirmation</small>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-clock"></i> After uploading, your payment will be verified within 24 hours.
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-upload"></i> Submit Payment Proof
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

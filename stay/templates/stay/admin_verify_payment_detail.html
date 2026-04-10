@@ -1,0 +1,125 @@
+{% extends 'stay/base.html' %}
+{% block title %}Verify Payment - Booking #{{ booking.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_verify_payments' %}">Verify Payments</a></li>
+                    <li class="breadcrumb-item active">Booking #{{ booking.id }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-7">
+            <!-- Booking Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Booking Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Booking ID:</strong> #{{ booking.id }}</p>
+                            <p><strong>Customer:</strong> {{ booking.user.get_full_name|default:booking.user.username }}</p>
+                            <p><strong>Email:</strong> {{ booking.user.email }}</p>
+                            <p><strong>Phone:</strong> {{ booking.user.profile.phone|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Booking Date:</strong> {{ booking.created_at|date:"M d, Y H:i" }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="badge bg-{% if booking.booking_status == 'payment_uploaded' %}warning{% elif booking.booking_status == 'payment_verified' %}success{% else %}secondary{% endif %}">
+                                    {{ booking.get_booking_status_display }}
+                                </span>
+                            </p>
+                            <p><strong>Payment Method:</strong> {{ booking.get_payment_method_display }}</p>
+                            <p><strong>Reference #:</strong> {{ booking.payment_reference|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Room Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Room Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Hotel:</strong> {{ booking.room.hotel.name }}</p>
+                            <p><strong>Room Type:</strong> {{ booking.room.get_room_type_display }}</p>
+                            <p><strong>Room Number:</strong> {{ booking.room.room_number }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Check In:</strong> {{ booking.check_in }}</p>
+                            <p><strong>Check Out:</strong> {{ booking.check_out }}</p>
+                            <p><strong>Guests:</strong> {{ booking.guests }}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <p><strong>Total Amount:</strong> <span class="h4 text-primary">${{ booking.total_price }}</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-5">
+            <!-- Payment Proof -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-image"></i> Payment Proof</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if booking.payment_screenshot %}
+                        <img src="{{ booking.payment_screenshot.url }}" class="img-fluid rounded mb-3" alt="Payment Screenshot">
+                        <p><strong>Reference Number:</strong> {{ booking.payment_reference }}</p>
+                    {% else %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> No payment screenshot uploaded.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Verification Action -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Verification Action</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Admin Notes (Optional)</label>
+                            <textarea name="notes" class="form-control" rows="2" placeholder="Add verification notes..."></textarea>
+                        </div>
+                        
+                        {% if booking.booking_status == 'payment_uploaded' %}
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="action" value="verify" class="btn btn-success">
+                                    <i class="fas fa-check-circle"></i> Verify Payment & Confirm Booking
+                                </button>
+                                <button type="submit" name="action" value="reject" class="btn btn-danger">
+                                    <i class="fas fa-times-circle"></i> Reject Payment
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> This payment has been {{ booking.booking_status }}.
+                            </div>
+                            <a href="{% url 'admin_verify_payments' %}" class="btn btn-secondary w-100">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

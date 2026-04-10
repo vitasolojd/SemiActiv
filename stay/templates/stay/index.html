@@ -1,0 +1,106 @@
+{% extends 'stay/base.html' %}
+{% block title %}Home - InstaStay{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Background Image -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center text-white">
+                <h1 class="display-4 fw-bold mb-3">Welcome to InstaStay</h1>
+                <p class="lead mb-4">Experience luxury and comfort at unbeatable prices</p>
+                
+                <!-- Search Form -->
+                <div class="card bg-white bg-opacity-90 p-4 rounded-4 shadow-lg">
+                    <form class="row g-3" onsubmit="return searchRooms()">
+                        <div class="col-md-4">
+                            <input type="date" id="search_check_in" class="form-control form-control-lg" placeholder="Check In" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="date" id="search_check_out" class="form-control form-control-lg" placeholder="Check Out" required>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" id="search_guests" class="form-control form-control-lg" placeholder="Guests" min="1" value="2">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Rooms Section -->
+<section class="container my-5">
+    <h2 class="text-center mb-4">Featured Rooms</h2>
+    <div class="row">
+        {% for room in featured_rooms %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm hover-shadow transition">
+                <img src="{{ room.get_image }}" class="card-img-top" alt="{{ room.get_room_type_display }}" style="height: 220px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ room.get_room_type_display }}</h5>
+                    <p class="card-text">
+                        <i class="fas fa-users"></i> {{ room.capacity }} Guests<br>
+                        <i class="fas fa-bed"></i> Room {{ room.room_number }}
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="text-primary mb-0">${{ room.price_per_night }}<small class="text-muted">/night</small></h5>
+                        <a href="{% url 'booking' room.id %}" class="btn btn-primary">Book Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p>No rooms available at the moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<style>
+.hero-section {
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9');
+    background-size: cover;
+    background-position: center;
+    min-height: 550px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+}
+
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+
+.bg-opacity-90 {
+    --bs-bg-opacity: 0.9;
+}
+</style>
+
+<script>
+function searchRooms() {
+    const checkIn = document.getElementById('search_check_in').value;
+    const checkOut = document.getElementById('search_check_out').value;
+    const guests = document.getElementById('search_guests').value;
+    
+    if (!checkIn || !checkOut) {
+        alert('Please select check-in and check-out dates');
+        return false;
+    }
+    
+    window.location.href = `/rooms/?check_in=${checkIn}&check_out=${checkOut}&guests=${guests}`;
+    return false;
+}
+</script>
+{% endblock %}

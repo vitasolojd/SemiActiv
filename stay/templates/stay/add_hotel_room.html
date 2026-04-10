@@ -1,0 +1,81 @@
+{% extends 'stay/base.html' %}
+{% block title %}Add Room to Your Hotel - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle"></i> Add Room to {{ hotel.name }}
+                    </h4>
+                    <small>Add a new room with images to your hotel inventory</small>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-hashtag"></i> Room Number *</label>
+                            {{ form.room_number }}
+                            <small class="text-muted">Example: 101, 202, 305</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-door-open"></i> Room Type *</label>
+                            {{ form.room_type }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="fas fa-users"></i> Capacity *</label>
+                                {{ form.capacity }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="fas fa-dollar-sign"></i> Price per Night *</label>
+                                {{ form.price_per_night }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-concierge-bell"></i> Amenities *</label>
+                            {{ form.amenities }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-info-circle"></i> Description</label>
+                            {{ form.description }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="fas fa-image"></i> Upload Image</label>
+                                {{ form.image }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="fas fa-link"></i> Or Image URL</label>
+                                {{ form.image_url }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-circle"></i> Status *</label>
+                            {{ form.status }}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Add Room
+                            </button>
+                            <a href="{% url 'hotel_dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

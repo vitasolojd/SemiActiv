@@ -1,0 +1,222 @@
+{% extends 'stay/base.html' %}
+{% block title %}Login - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <i class="fas fa-hotel fa-3x mb-2"></i>
+                    <h3 class="mb-0">Welcome Back!</h3>
+                    <p class="mb-0 small">Sign in to continue to InstaStay</p>
+                </div>
+                <div class="card-body p-4">
+                    
+                    <!-- Display messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message|safe }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post" id="loginForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-envelope"></i> Username / Email
+                            </label>
+                            <input type="text" name="username" id="username" 
+                                   class="form-control form-control-lg" 
+                                   placeholder="Enter your username" 
+                                   value="{{ request.POST.username }}"
+                                   autocomplete="off"
+                                   required>
+                            <div id="usernameFeedback" class="small mt-1"></div>
+                        </div>
+                        
+                        <div class="mb-3" id="passwordField" style="display: none;">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock"></i> Password
+                            </label>
+                            <input type="password" name="password" id="password" 
+                                   class="form-control form-control-lg" 
+                                   placeholder="Enter your password" 
+                                   required>
+                            <div class="d-flex justify-content-end mt-1">
+                                <a href="#" class="text-decoration-none small" id="forgotPasswordLink">
+                                    Forgot Password?
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-4" id="rememberField" style="display: none;">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="remember">
+                                <label class="form-check-label" for="remember">Remember me</label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3" id="loginButton" style="display: none;">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="mb-2">Don't have an account?</p>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'customer_register' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-user"></i> Sign Up as Customer
+                            </a>
+                            <a href="{% url 'hotel_owner_register' %}" class="btn btn-outline-success">
+                                <i class="fas fa-hotel"></i> Sign Up as Hotel Owner
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="fas fa-key"></i> Forgot Password?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Enter your username to reset your password.</p>
+                <input type="text" id="resetUsername" class="form-control" placeholder="Username">
+                <div class="mt-3">
+                    <button class="btn btn-warning w-100" onclick="resetPassword()">
+                        <i class="fas fa-paper-plane"></i> Send Reset Link
+                    </button>
+                </div>
+                <div class="mt-3" id="resetMessage" style="display: none;">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Password reset link has been sent to your email!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time username check
+const usernameInput = document.getElementById('username');
+const usernameFeedback = document.getElementById('usernameFeedback');
+const passwordField = document.getElementById('passwordField');
+const rememberField = document.getElementById('rememberField');
+const loginButton = document.getElementById('loginButton');
+
+let debounceTimer;
+
+usernameInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    const username = this.value.trim();
+    
+    if (username.length < 3) {
+        usernameFeedback.innerHTML = '<span class="text-muted">Enter at least 3 characters</span>';
+        passwordField.style.display = 'none';
+        rememberField.style.display = 'none';
+        loginButton.style.display = 'none';
+        return;
+    }
+    
+    // Show loading indicator
+    usernameFeedback.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Checking...</span>';
+    
+    debounceTimer = setTimeout(() => {
+        // Check if username exists
+        fetch(`/check-username/?username=${encodeURIComponent(username)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    usernameFeedback.innerHTML = '<span class="text-success">✅ Account found! Enter your password to login.</span>';
+                    passwordField.style.display = 'block';
+                    rememberField.style.display = 'block';
+                    loginButton.style.display = 'block';
+                    document.getElementById('password').focus();
+                } else {
+                    usernameFeedback.innerHTML = '<span class="text-danger">❌ Account not found. Would you like to <a href="/register/customer/" class="alert-link">sign up</a>?</span>';
+                    passwordField.style.display = 'none';
+                    rememberField.style.display = 'none';
+                    loginButton.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                usernameFeedback.innerHTML = '<span class="text-danger">Error checking account. Please try again.</span>';
+            });
+    }, 500);
+});
+
+// Forgot password modal
+document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    var myModal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
+    myModal.show();
+});
+
+function resetPassword() {
+    const username = document.getElementById('resetUsername').value;
+    if (!username) {
+        alert('Please enter your username');
+        return;
+    }
+    
+    // Check if username exists first
+    fetch(`/check-username/?username=${encodeURIComponent(username)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                document.getElementById('resetMessage').style.display = 'block';
+                document.getElementById('resetUsername').value = '';
+                setTimeout(() => {
+                    document.getElementById('resetMessage').style.display = 'none';
+                }, 3000);
+            } else {
+                alert('Account not found. Please check your username.');
+            }
+        });
+}
+
+// Remember me functionality
+if (localStorage.getItem('savedUsername')) {
+    usernameInput.value = localStorage.getItem('savedUsername');
+    // Trigger the input event to check the username
+    const event = new Event('input', { bubbles: true });
+    usernameInput.dispatchEvent(event);
+}
+
+document.getElementById('remember').addEventListener('change', function() {
+    if (this.checked) {
+        localStorage.setItem('savedUsername', usernameInput.value);
+    } else {
+        localStorage.removeItem('savedUsername');
+    }
+});
+</script>
+
+<style>
+.alert a {
+    text-decoration: underline;
+}
+.alert a:hover {
+    color: #ff6b35;
+}
+#usernameFeedback {
+    min-height: 40px;
+}
+</style>
+{% endblock %}

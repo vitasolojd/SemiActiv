@@ -1,0 +1,216 @@
+{% extends 'stay/base.html' %}
+{% block title %}Add Room - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle"></i> Add New Room
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="addRoomForm">
+                        {% csrf_token %}
+                        
+                        <!-- Room Number -->
+                        <div class="mb-3">
+                            <label for="{{ form.room_number.id_for_label }}" class="form-label">
+                                <i class="fas fa-hashtag"></i> Room Number *
+                            </label>
+                            {{ form.room_number }}
+                            <small class="text-muted">Example: 101, 202, 305, etc.</small>
+                            {% if form.room_number.errors %}
+                                <div class="text-danger small">{{ form.room_number.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Room Type -->
+                        <div class="mb-3">
+                            <label for="{{ form.room_type.id_for_label }}" class="form-label">
+                                <i class="fas fa-door-open"></i> Room Type *
+                            </label>
+                            {{ form.room_type }}
+                            <small class="text-muted">Select room type to auto-fill capacity and price</small>
+                            {% if form.room_type.errors %}
+                                <div class="text-danger small">{{ form.room_type.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.capacity.id_for_label }}" class="form-label">
+                                    <i class="fas fa-users"></i> Capacity (Guests) *
+                                </label>
+                                {{ form.capacity }}
+                                {% if form.capacity.errors %}
+                                    <div class="text-danger small">{{ form.capacity.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.price_per_night.id_for_label }}" class="form-label">
+                                    <i class="fas fa-dollar-sign"></i> Price per Night *
+                                </label>
+                                {{ form.price_per_night }}
+                                {% if form.price_per_night.errors %}
+                                    <div class="text-danger small">{{ form.price_per_night.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Amenities -->
+                        <div class="mb-3">
+                            <label for="{{ form.amenities.id_for_label }}" class="form-label">
+                                <i class="fas fa-concierge-bell"></i> Amenities *
+                            </label>
+                            {{ form.amenities }}
+                            <small class="text-muted">Example: WiFi, AC, TV, Mini Bar, Room Service, etc.</small>
+                            {% if form.amenities.errors %}
+                                <div class="text-danger small">{{ form.amenities.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-info-circle"></i> Description
+                            </label>
+                            {{ form.description }}
+                            <small class="text-muted">Describe the room features and highlights</small>
+                            {% if form.description.errors %}
+                                <div class="text-danger small">{{ form.description.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Status -->
+                        <div class="mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">
+                                <i class="fas fa-circle"></i> Status *
+                            </label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="text-danger small">{{ form.status.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Room Type Information:
+                            <div class="row mt-2 small">
+                                <div class="col-md-4">
+                                    <strong>Single:</strong> 1 person, $80/night<br>
+                                    <strong>Double:</strong> 2 persons, $120/night<br>
+                                    <strong>Twin:</strong> 2 persons, $130/night
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Queen:</strong> 2 persons, $160/night<br>
+                                    <strong>King:</strong> 2 persons, $200/night<br>
+                                    <strong>Master Suite:</strong> 4 persons, $350/night
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Family:</strong> 5-6 persons, $280/night<br>
+                                    <strong>Deluxe:</strong> 2 persons, $300/night<br>
+                                    <strong>Presidential:</strong> 4 persons, $800/night
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Add Room
+                            </button>
+                            <a href="{% url 'manage_rooms' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateRoomDetails(select) {
+    const roomDefaults = {
+        'SINGLE': { capacity: 1, price: 80 },
+        'DOUBLE': { capacity: 2, price: 120 },
+        'TWIN': { capacity: 2, price: 130 },
+        'QUEEN': { capacity: 2, price: 160 },
+        'KING': { capacity: 2, price: 200 },
+        'MASTER': { capacity: 4, price: 350 },
+        'FAMILY': { capacity: 6, price: 280 },
+        'DELUXE': { capacity: 2, price: 300 },
+        'PRESIDENTIAL': { capacity: 4, price: 800 }
+    };
+    
+    const selected = select.value;
+    if (roomDefaults[selected]) {
+        const capacityField = document.getElementById('id_capacity');
+        const priceField = document.getElementById('id_price_per_night');
+        
+        if (capacityField && !capacityField.value) {
+            capacityField.value = roomDefaults[selected].capacity;
+        }
+        if (priceField && !priceField.value) {
+            priceField.value = roomDefaults[selected].price;
+        }
+        
+        // Show success feedback
+        const feedback = document.createElement('div');
+        feedback.className = 'alert alert-success alert-dismissible fade show mt-2';
+        feedback.innerHTML = `
+            <i class="fas fa-check-circle"></i> 
+            Room type updated! Capacity: ${roomDefaults[selected].capacity} guests, Price: $${roomDefaults[selected].price}/night
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Remove existing feedback
+        const existingFeedback = select.parentNode.querySelector('.alert-success');
+        if (existingFeedback) existingFeedback.remove();
+        
+        select.parentNode.appendChild(feedback);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (feedback) feedback.remove();
+        }, 3000);
+    }
+}
+
+// Add event listener when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const roomTypeSelect = document.getElementById('id_room_type');
+    if (roomTypeSelect) {
+        roomTypeSelect.addEventListener('change', function() {
+            updateRoomDetails(this);
+        });
+    }
+    
+    // Validate room number format
+    const roomNumberField = document.getElementById('id_room_number');
+    if (roomNumberField) {
+        roomNumberField.addEventListener('blur', function() {
+            const value = this.value.trim();
+            if (value && !/^[0-9A-Za-z-]+$/.test(value)) {
+                this.classList.add('is-invalid');
+                let errorDiv = this.parentNode.querySelector('.invalid-feedback');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'invalid-feedback';
+                    errorDiv.textContent = 'Room number can only contain letters, numbers, and hyphens.';
+                    this.parentNode.appendChild(errorDiv);
+                }
+            } else {
+                this.classList.remove('is-invalid');
+                const errorDiv = this.parentNode.querySelector('.invalid-feedback');
+                if (errorDiv) errorDiv.remove();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

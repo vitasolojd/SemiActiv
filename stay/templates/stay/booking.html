@@ -1,0 +1,109 @@
+{% extends 'stay/base.html' %}
+{% block title %}Book Room - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                    <h3 class="mb-0">Book Your Stay</h3>
+                    <p class="mb-0 small">Complete the form to book this room</p>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Room Summary -->
+                    <div class="alert alert-info">
+                        <h5 class="mb-2">{{ room.get_room_type_display }}</h5>
+                        <p class="mb-1"><strong>Room Number:</strong> {{ room.room_number }}</p>
+                        <p class="mb-1"><strong>Capacity:</strong> {{ room.capacity }} guests</p>
+                        <p class="mb-1"><strong>Amenities:</strong> {{ room.amenities }}</p>
+                        <p class="mb-0"><strong>Price:</strong> ${{ room.price_per_night }} per night</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="fas fa-calendar-alt"></i> Check-in Date *</label>
+                                {{ form.check_in }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="fas fa-calendar-alt"></i> Check-out Date *</label>
+                                {{ form.check_out }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="fas fa-users"></i> Number of Guests *</label>
+                                {{ form.guests }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="fas fa-credit-card"></i> Payment Method *</label>
+                                {{ form.payment_method }}
+                                <small class="text-muted">Select your preferred payment method</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-comment"></i> Special Requests</label>
+                            {{ form.special_requests }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Total Price</label>
+                            <div id="total_price" class="h2 text-primary">$0.00</div>
+                            <input type="hidden" id="total_amount" name="total_price">
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Payment Process:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>After booking, you will be redirected to upload payment proof</li>
+                                <li>Your booking will be confirmed after payment verification</li>
+                                <li>Cancellation policy applies after confirmation</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-credit-card"></i> Proceed to Payment
+                            </button>
+                            <a href="{% url 'rooms' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function calculateTotal() {
+    const checkIn = document.getElementById('id_check_in');
+    const checkOut = document.getElementById('id_check_out');
+    const pricePerNight = {{ room.price_per_night }};
+    const totalDisplay = document.getElementById('total_price');
+    
+    if (checkIn.value && checkOut.value) {
+        const start = new Date(checkIn.value);
+        const end = new Date(checkOut.value);
+        
+        if (end > start) {
+            const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            const total = nights * pricePerNight;
+            totalDisplay.textContent = '$' + total.toFixed(2);
+            document.getElementById('total_amount').value = total.toFixed(2);
+        }
+    }
+}
+
+document.getElementById('id_check_in')?.addEventListener('change', calculateTotal);
+document.getElementById('id_check_out')?.addEventListener('change', calculateTotal);
+</script>
+{% endblock %}

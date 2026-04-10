@@ -1,0 +1,90 @@
+{% extends 'stay/base.html' %}
+{% block title %}Register Your Hotel - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <i class="fas fa-hotel fa-3x mb-2"></i>
+                    <h3 class="mb-0">Register Your Hotel</h3>
+                    <p class="mb-0 small">Start managing your hotel and rooms</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Why register your hotel?</strong><br>
+                        As a hotel owner, you'll be able to:
+                        <ul class="mb-0 mt-2">
+                            <li>Add and manage your hotel rooms</li>
+                            <li>View and manage bookings</li>
+                            <li>Track your hotel revenue</li>
+                            <li>Update room availability</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="post" action="{% url 'register_hotel' %}">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Hotel Name *</label>
+                                <input type="text" name="name" class="form-control form-control-lg" 
+                                       placeholder="Enter your hotel name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Hotel Email *</label>
+                                <input type="email" name="email" class="form-control form-control-lg" 
+                                       value="{{ user.email }}" placeholder="hotel@example.com" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Hotel Phone *</label>
+                                <input type="tel" name="phone" class="form-control form-control-lg" 
+                                       placeholder="+1 234 567 8900" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Hotel Address *</label>
+                            <textarea name="address" class="form-control" rows="2" 
+                                      placeholder="Street address, building number" required></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">City *</label>
+                                <input type="text" name="city" class="form-control form-control-lg" 
+                                       placeholder="City" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Country *</label>
+                                <input type="text" name="country" class="form-control form-control-lg" 
+                                       placeholder="Country" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Hotel Description</label>
+                            <textarea name="description" class="form-control" rows="3" 
+                                      placeholder="Describe your hotel, amenities, and unique features"></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle"></i> Register Hotel
+                            </button>
+                            <a href="{% url 'hotel_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Do It Later
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

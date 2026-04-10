@@ -1,0 +1,133 @@
+{% extends 'stay/base.html' %}
+{% block title %}Booking Confirmed - InstaStay{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <i class="fas fa-check-circle fa-4x mb-2"></i>
+                    <h2 class="mb-0">Booking Confirmed!</h2>
+                    <p class="mb-0">Your reservation has been successfully processed</p>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Room Summary -->
+                    <div class="alert alert-success">
+                        <h4 class="mb-2">{{ booking.room.get_room_type_display }}</h4>
+                        <p class="mb-0">{{ booking.check_in|date:"F d, Y" }} - {{ booking.check_out|date:"F d, Y" }}</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-hotel"></i> Room Details</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Room Name:</th>
+                                    <td>Room {{ booking.room.room_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Room Type:</th>
+                                    <td>{{ booking.room.get_room_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Capacity:</th>
+                                    <td>{{ booking.room.capacity }} Guests</td>
+                                </tr>
+                                <tr>
+                                    <th>Price per Night:</th>
+                                    <td>${{ booking.room.price_per_night }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-calendar-alt"></i> Booking Details</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Check-in:</th>
+                                    <td>{{ booking.check_in|date:"F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Check-out:</th>
+                                    <td>{{ booking.check_out|date:"F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Nights:</th>
+                                    <td>{{ booking.nights }} nights</td>
+                                </tr>
+                                <tr>
+                                    <th>Guests:</th>
+                                    <td>{{ booking.guests }} Guest{{ booking.guests|pluralize }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Total Price:</th>
+                                    <td><strong>${{ booking.total_price }}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5><i class="fas fa-credit-card"></i> Payment Information</h5>
+                    <div class="alert alert-info">
+                        <p class="mb-0">
+                            <i class="fas fa-info-circle"></i> Your details must be confirmed before booking.<br>
+                            <i class="fas fa-credit-card"></i> A card is required to book this room.<br>
+                            <i class="fas fa-clock"></i> You can cancel your reservation at any time without penalty.
+                        </p>
+                    </div>
+                    
+                    <h5><i class="fas fa-ban"></i> Cancellation Policy</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Cancellation Period</th>
+                                    <th>Cancellation Fee</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Within 24 hours of arrival</td>
+                                    <td>$50 per night</td>
+                                </tr>
+                                <tr>
+                                    <td>Within 48 hours of arrival</td>
+                                    <td>$25 per night</td>
+                                </tr>
+                                <tr>
+                                    <td>Within 72 hours of arrival</td>
+                                    <td>$15 per night</td>
+                                </tr>
+                                <tr>
+                                    <td>Within 144 hours of arrival</td>
+                                    <td>$10 per night</td>
+                                </tr>
+                                <tr>
+                                    <td>More than 144 hours before arrival</td>
+                                    <td>Free cancellation</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        <strong>Important:</strong> Cancellation fees may apply. Please review our cancellation policy before making changes to your reservation.
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-primary">
+                            <i class="fas fa-tachometer-alt"></i> Go to My Dashboard
+                        </a>
+                        <a href="{% url 'rooms' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-search"></i> Browse More Rooms
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
